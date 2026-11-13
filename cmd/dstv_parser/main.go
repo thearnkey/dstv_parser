@@ -16,6 +16,7 @@ func main() {
 	type result struct {
 		File string `json:"file"`
 		*dstv.Part
+		Cutting dstv.CuttingAssessment `json:"cutting"`
 	}
 	enc := json.NewEncoder(os.Stdout)
 	enc.SetIndent("", "  ")
@@ -25,7 +26,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "%s: %v\n", path, err)
 			os.Exit(1)
 		}
-		if err := enc.Encode(result{path, part}); err != nil {
+		if err := enc.Encode(result{path, part, part.Cutting()}); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}

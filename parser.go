@@ -14,9 +14,13 @@ import (
 // Part is one DSTV part description. Blocks retain their original data lines so
 // unsupported and vendor-specific geometry is never silently discarded.
 type Part struct {
-	Header   Header
-	Blocks   []Block
-	Comments []Comment
+	Header           Header
+	Blocks           []Block
+	Comments         []Comment
+	ExternalContours []Contour
+	InternalContours []Contour
+	SawCuts          []SawCut
+	CutWarnings      []string
 }
 
 type Header struct {
@@ -125,6 +129,7 @@ func Parse(r io.Reader) (*Part, error) {
 		return nil, err
 	}
 	part.Header = h
+	part.parseCuts()
 	return part, nil
 }
 
@@ -170,7 +175,7 @@ func parseHeader(lines []DataLine) (Header, error) {
 	if h.Profile == "" || h.ProfileCode == "" {
 		return h, fmt.Errorf("ST header: profile and profile code are required")
 	}
-	lengths := strings.Fields(value(8))
+	lengths := strings.Fields(strings.ReplaceAll(value(8), ",", " "))
 	if len(lengths) < 1 || len(lengths) > 2 {
 		return h, fmt.Errorf("line %d: expected length and optional saw length", lines[8].Line)
 	}
